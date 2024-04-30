@@ -1,0 +1,32 @@
+from telegram import Bot
+from telegram.ext import Updater, CommandHandler
+from TikTokApi import TikTokApi
+
+def fetch_tiktok_videos():
+    # Initialize TikTokApi
+    api = TikTokApi.get_instance()
+    # Fetch trending videos for fashion
+    videos = api.by_trending(count=5, custom_verifyFp="")
+    return videos
+
+def send_videos(update, context):
+    videos = fetch_tiktok_videos()
+    for video in videos:
+        message = f"{video['description']}\nWatch here: {video['video']['playAddr']}"
+        context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+
+def main():
+    # Token from BotFather
+    TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
+    bot = Bot(TOKEN)
+    updater = Updater(token=TOKEN, use_context=True)
+    
+    # Command handler to trigger video sending
+    dp = updater.dispatcher
+    dp.add_handler(CommandHandler('sendmevideos', send_videos))
+    
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
